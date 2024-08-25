@@ -1,0 +1,6 @@
+- The `PostStore` fetches the list of posts from `/api/posts`
+- The `PostStore` fetches the single post by id from `/api/posts/:id`
+- The `PostStore` keeps up with the loading state of each request
+- The `PostStore` exposes the list of posts for use within app components
+- The `PostStore` exposes the individual post for use within app components
+- The `PostStore` uses the partial data for a single post when available from the posts list data
