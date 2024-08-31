@@ -6,11 +6,21 @@ import { useCachedFetch } from "@/composables/useCachedFetch";
 export const usePostStore = defineStore("PostStore", () => {
   const posts = ref<Post[]>();
   const loadingList = ref(false);
-  function fetchPostList() {}
+  async function fetchPostList() {
+    loadingList.value = true;
+    const response = await fetch("/api/posts?fields=id,title,previewSnippet");
+    posts.value = await response.json();
+    loadingList.value = false;
+  }
 
   const loadingSingle = ref(false);
   const post = ref<Post>();
-  function fetchPostSingle() {}
+  async function fetchPostSingle(id: number) {
+    loadingSingle.value = true;
+    const response = await fetch(`/api/posts/${id}`);
+    post.value = await response.json();
+    loadingSingle.value = false;
+  }
 
   return {
     // list of posts
