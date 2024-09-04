@@ -12,9 +12,9 @@ if (!id) {
   throw new Error("Post ID is required");
 }
 
-postStore.fetchPostSingle(id);
-
-const post = computed(() => postStore.post);
+const post = computed(() =>
+  postStore.postWithBody.find((post) => post.id === id)
+);
 
 const singlePostTitle = computed(
   () => postStore.posts?.find((item) => item.id === id)?.title
@@ -23,9 +23,9 @@ const singlePostTitle = computed(
 <template>
   <h1 class="text-3xl">
     {{ singlePostTitle ?? post?.title }}
-    <AppLoader v-if="postStore.loadingSingle" size="sm" />
+    <AppLoader v-if="postStore.loadingList" size="sm" />
   </h1>
-  <div v-if="!postStore.loadingSingle && post">
+  <div v-if="post">
     <p>
       {{ new Date(post?.publishedAt).toLocaleDateString() }}
       {{ new Date(post?.publishedAt).toLocaleTimeString() }}

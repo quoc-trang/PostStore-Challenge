@@ -1,26 +1,36 @@
 import { defineStore, acceptHMRUpdate } from "pinia";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import type { Post } from "@/types";
 import { useCachedFetch } from "@/composables/useCachedFetch";
 
 export const usePostStore = defineStore("PostStore", () => {
   const posts = ref<Post[]>();
-  const loadingList = ref(false);
+  const { loading: loadingList, doFetch } = useCachedFetch({
+    fetchStrategy: "stale-refresh-bg",
+    data: posts,
+  });
+
   async function fetchPostList() {
-    loadingList.value = true;
-    const response = await fetch("/api/posts?fields=id,title,previewSnippet");
-    posts.value = await response.json();
-    loadingList.value = false;
+    await doFetch("/api/posts?fields=id,title,previewSnippet");
   }
 
-  const loadingSingle = ref(false);
-  const post = ref<Post>();
+  const postWithBody = ref<Post[]>([]);
+  const singlePost = ref<Post>();
+
   async function fetchPostSingle(id: number) {
-    loadingSingle.value = true;
-    const response = await fetch(`/api/posts/${id}`);
-    post.value = await response.json();
-    loadingSingle.value = false;
+    const { loading: loadingSingle, doFetch: doFetchSingle } = useCachedFetch({
+      fetchStrategy: "stale-refresh-bg",
+      data: singlePost,
+    });
+    await doFetchSingle(`/api/posts/${id}`);
   }
+
+  watch(posts, (newValue) => {
+    newValue?.forEach(async (item) => {
+      await fetchPostSingle(item.id);
+      if (singlePost.value) postWithBody.value.push(singlePost.value);
+    });
+  });
 
   return {
     // list of posts
@@ -30,8 +40,7 @@ export const usePostStore = defineStore("PostStore", () => {
 
     // single post
     fetchPostSingle,
-    loadingSingle,
-    post,
+    postWithBody,
   };
 });
 
